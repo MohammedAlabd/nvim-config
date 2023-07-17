@@ -49,7 +49,7 @@ require('packer').startup(function(use)
   use 'tpope/vim-rhubarb'
   use 'lewis6991/gitsigns.nvim'
 
-  use { "catppuccin/nvim", as = "catppuccin" }
+ use { "catppuccin/nvim", as = "catppuccin" }
 
 
   use 'navarasu/onedark.nvim' -- Theme inspired by Atom
@@ -121,6 +121,7 @@ vim.opt.isfname:append("@-@")
 vim.wo.number = true
 vim.opt.relativenumber = true
 
+vim.o.colorcolumn = "120"
 
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
@@ -166,7 +167,10 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 
 
 -- code actions
--- vim.keymap.set({ 'n', 'v', 'x' }, '<leader>a', '<cmd>CocCommand actions.open<CR>', {silent = true})
+vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Plug>(coc-codeaction-selected)', {silent = true})
+
+-- rename
+vim.keymap.set('n', '<leader>rn', '<Plug>(coc-rename)', {silent = true})
 
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
@@ -286,6 +290,14 @@ vim.keymap.set("n", "<leader>pv", vim.cmd.Ex);
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 
+-- Use `[g` and `]g` to navigate diagnostics
+-- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+vim.keymap.set("n", "[g", "<Plug>(coc-diagnostic-prev)", {silent = true})
+vim.keymap.set("n", "]g", "<Plug>(coc-diagnostic-next)", {silent = true})
+
+-- quickfix
+vim.keymap.set("n", "qn", "<cmd>cn<CR>")
+vim.keymap.set("n", "qp", "<cmd>cp<CR>")
 
 vim.keymap.set("n", "J", "mzJ`z")
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
@@ -361,15 +373,15 @@ require('nvim-treesitter.configs').setup {
         ['[]'] = '@class.outer',
       },
     },
-    swap = {
-      enable = true,
-      swap_next = {
-        ['<leader>a'] = '@parameter.inner',
-      },
-      swap_previous = {
-        ['<leader>A'] = '@parameter.inner',
-      },
-    },
+    -- swap = {
+    --   enable = true,
+    --   swap_next = {
+    --     ['<leader>a'] = '@parameter.inner',
+    --   },
+    --   swap_previous = {
+    --     ['<leader>A'] = '@parameter.inner',
+    --   },
+    -- },
   },
 }
 
@@ -399,7 +411,7 @@ local on_attach = function(_, bufnr)
   nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
-  nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+  nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
   nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
@@ -409,6 +421,14 @@ local on_attach = function(_, bufnr)
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
   nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+
+  -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
+  vim.api.nvim_create_augroup("CocGroup", {})
+  vim.api.nvim_create_autocmd("CursorHold", {
+    group = "CocGroup",
+    command = "silent call CocActionAsync('highlight')",
+    desc = "Highlight symbol under cursor on CursorHold"
+  })
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
