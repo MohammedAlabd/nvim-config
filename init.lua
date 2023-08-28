@@ -49,14 +49,20 @@ require('packer').startup(function(use)
   use 'tpope/vim-rhubarb'
   use 'lewis6991/gitsigns.nvim'
 
- use { "catppuccin/nvim", as = "catppuccin" }
+  use { "catppuccin/nvim", as = "catppuccin" }
 
+  use 'christoomey/vim-tmux-navigator'
+  use 'sk1418/QFGrep'
+  use 'leafgarland/typescript-vim'
 
   use 'navarasu/onedark.nvim' -- Theme inspired by Atom
   use 'nvim-lualine/lualine.nvim' -- Fancier statusline
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
+
+  use 'PatschD/zippy.nvim'
+
 
   use 'jose-elias-alvarez/null-ls.nvim'
   use 'MunifTanjim/eslint.nvim'
@@ -128,6 +134,10 @@ vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
+
+vim.opt.foldmethod = "indent"
+vim.opt.foldcolumn = "2"
+
 vim.opt.smartindent = true
 
 -- Enable mouse mode
@@ -161,16 +171,21 @@ vim.o.completeopt = 'menuone,noselect'
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- looger
+vim.keymap.set("n", "<leader>lg", "<cmd>lua require('zippy').insert_print()<CR>")
+
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 
+-- Apply the most preferred quickfix action on the current line.
+vim.keymap.set("n", "<leader>qf", "<Plug>(coc-fix-current)")
 
 -- code actions
 vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Plug>(coc-codeaction-selected)', {silent = true})
 
 -- rename
-vim.keymap.set('n', '<leader>rn', '<Plug>(coc-rename)', {silent = true})
+-- vim.keymap.set('n', '<leader>rn', '<Plug>(coc-rename)', {silent = true})
 
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
@@ -420,8 +435,6 @@ local on_attach = function(_, bufnr)
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
-
   -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
   vim.api.nvim_create_augroup("CocGroup", {})
   vim.api.nvim_create_autocmd("CursorHold", {
@@ -536,6 +549,48 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+
+-- Map <leader>o to append empty lines below the current line
+vim.api.nvim_set_keymap('n', '<leader>o', [[:<C-u>call append(line("."), repeat({""}, v:count1))<CR>]], { noremap = true, silent = true })
+
+-- Map <leader>O to append empty lines above the current line
+vim.api.nvim_set_keymap('n', '<leader>O', [[:<C-u>call append(line(".") - 1, repeat({""}, v:count1))<CR>]], { noremap = true, silent = true })
+
+
+
+-- Set quickfix window layout for horizontal split
+vim.cmd([[
+  autocmd QuickFixCmdPost [^l]* nested cwindow
+]])
+
+-- Set quickfix window layout for vertical split
+vim.cmd([[
+  autocmd QuickFixCmdPost    l* nested lwindow
+]])
+
+
+vim.cmd [[
+  augroup strdr4605
+    autocmd FileType typescript,typescriptreact compiler tsc | setlocal makeprg=npx\ tsc
+  augroup END
+]]
+
+function run_type_script_check()
+    local output = vim.fn.systemlist('npx tsc --noEmit --skipLibCheck 2>&1')
+    local qflist = {}
+    for _, line in ipairs(output) do
+        local trimmed_line = string.match(line, '^||%s*(.*)$') or line
+        local file, line_number = string.match(trimmed_line, '^(.*):(.-):.-:%s*(.-)$')
+        if file and line_number then
+            table.insert(qflist, {filename = file, lnum = tonumber(line_number), text = trimmed_line})
+        else
+            table.insert(qflist, {filename = '', lnum = 0, text = trimmed_line})
+        end
+    end
+    vim.fn.setqflist(qflist)
+    vim.cmd('copen')
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

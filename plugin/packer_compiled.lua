@@ -84,6 +84,11 @@ _G.packer_plugins = {
     path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/LuaSnip",
     url = "https://github.com/L3MON4D3/LuaSnip"
   },
+  QFGrep = {
+    loaded = true,
+    path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/QFGrep",
+    url = "https://github.com/sk1418/QFGrep"
+  },
   catppuccin = {
     loaded = true,
     path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/catppuccin",
@@ -199,6 +204,11 @@ _G.packer_plugins = {
     path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/telescope.nvim",
     url = "https://github.com/nvim-telescope/telescope.nvim"
   },
+  ["typescript-vim"] = {
+    loaded = true,
+    path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/typescript-vim",
+    url = "https://github.com/leafgarland/typescript-vim"
+  },
   ["vim-fugitive"] = {
     loaded = true,
     path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/vim-fugitive",
@@ -213,6 +223,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/vim-sleuth",
     url = "https://github.com/tpope/vim-sleuth"
+  },
+  ["zippy.nvim"] = {
+    loaded = true,
+    path = "/Users/mohammed/.local/share/nvim/site/pack/packer/start/zippy.nvim",
+    url = "https://github.com/PatschD/zippy.nvim"
   }
 }
 
